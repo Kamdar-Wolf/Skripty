@@ -115,7 +115,7 @@
 
     // Aplikace barev
     function colorize() {
-        const selector = 'td[headers="MAX_RISK"], td[headers="C152066651003337423"]';
+        const selector = 'td[headers="BALANCED_RISK_LEVEL"], td[headers="RISK_LEVEL"]';
         const cells = document.querySelectorAll(selector);
 
         cells.forEach(cell => {
