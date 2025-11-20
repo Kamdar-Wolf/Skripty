@@ -12,7 +12,6 @@
 (function() {
 'use strict';
 
-
 // ========== 1) ÚPRAVA POPISKŮ PŘEPÍNAČŮ (čištění angličtiny) ==============
 
     // Bezpečné escapování textu pro regex
@@ -92,7 +91,6 @@
         });
     }
 
-
 // ========== 2) BAREVNÉ ZVÝRAZNĚNÍ RIZIK V TABULCE ==========================
 
     // Pravidla barev
@@ -128,19 +126,15 @@
         });
     }
 
-
 // =============================== SPOUŠTĚNÍ ================================
 
     window.addEventListener('load', () => {
         replaceLabels();
         colorize();
     });
-
     const observer = new MutationObserver(() => {
         replaceLabels();
         colorize();
     });
-
     observer.observe(document.body, { childList: true, subtree: true });
-
 })();
