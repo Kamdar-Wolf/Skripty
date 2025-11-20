@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Riscon: rizika
 // @namespace    https://github.com/Kamdar-Wolf/Skripty/blob/main/Riscon%3A%20rizika.js
-// @version      2.1
+// @version      2.3
 // @description  Sjednocený skript: úprava popisků přepínačů + barevné zvýraznění rizik podle hodnot.
 // @author       Martin
 // @match        https://www.riscon.cz/*
