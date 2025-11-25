@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Riscon – zvýraznění záložek 
-// @version      1.5
+// @version      2.0
 // @description  Výběr záložek v dolní liště a jejich trvalé zvýraznění. Ovládání v pravém sidebaru.
 // @author       Martin
 // @match        https://*/ords/*/f?p=110:*
