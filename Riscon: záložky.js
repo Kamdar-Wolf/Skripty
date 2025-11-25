@@ -1,13 +1,13 @@
 // ==UserScript==
-// @name         Riscon – zvýraznění záložek 
-// @version      2.0
+// @name         Riscon – zvýraznění záložek
+// @version      2.1
 // @description  Výběr záložek v dolní liště a jejich trvalé zvýraznění. Ovládání v pravém sidebaru.
 // @author       Martin
 // @match        https://*/ords/*/f?p=110:*
 // @match        https://www.riscon.cz/go/f?p=110*
 // @icon         https://www.riscon.cz//i/favicon.ico
-// @updateURL https://raw.githubusercontent.com/Kamdar-Wolf/Skripty/master/Riscon%20zalozky.js
-// @downloadURL https://raw.githubusercontent.com/Kamdar-Wolf/Skripty/master/Riscon%20zalozky.js
+// @updateURL    https://raw.githubusercontent.com/Kamdar-Wolf/Skripty/master/Riscon%20zalozky.js
+// @downloadURL  https://raw.githubusercontent.com/Kamdar-Wolf/Skripty/master/Riscon%20zalozky.js
 // @grant        none
 // ==/UserScript==
 
@@ -16,7 +16,7 @@
 
   var STORAGE_ROOT_KEY = 'cht_apex_rds_favs';
 
-  // === globální styl pro zvýrazněné záložky ===
+  // --- globální styl pro zvýrazněné záložky ---
   (function injectStyle() {
     if (document.getElementById('cht-rds-style')) return;
     var st = document.createElement('style');
@@ -33,6 +33,10 @@
     document.head.appendChild(st);
   })();
 
+  function mainAttempt(attempt) {
+    attempt = attempt || 1;
+
+    try {
       // 1) Najít UL se záložkami
       var tabsUl =
         document.getElementById('4225843429548680582_RDS') ||
@@ -40,11 +44,9 @@
         document.querySelector('.topbar .apex-rds');
 
       if (!tabsUl) {
-        debugBanner('čekám na záložky…');
+        // APEX ještě nenačetl taby, zkusíme to znovu
         if (attempt < 40) {
           setTimeout(function () { mainAttempt(attempt + 1); }, 250);
-        } else {
-          debugBanner('záložky nenalezeny');
         }
         return;
       }
@@ -53,7 +55,6 @@
         tabsUl.querySelectorAll('li.apex-rds-item')
       );
       if (!liNodes.length) {
-        debugBanner('žádné li.apex-rds-item');
         return;
       }
 
@@ -63,11 +64,8 @@
         document.getElementById('R4227506028705569666');
 
       if (!sidebarRegion || !sidebarRegion.parentNode) {
-        debugBanner('sidebar R4227506028705569666 nenalezen');
         if (attempt < 40) {
           setTimeout(function () { mainAttempt(attempt + 1); }, 250);
-        } else {
-          debugBanner('sidebar nenalezen ani po opakování');
         }
         return;
       }
@@ -132,7 +130,6 @@
       }
 
       // 5) Vytvořit nový blok sidebar-region-alt se stejným vzhledem jako ostatní
-
       var container = document.createElement('div');
       container.className = 'sidebar-region-alt';
       container.id = 'cht_rds_region';
@@ -155,7 +152,7 @@
       inner.style.fontFamily = 'Tahoma,Arial,sans-serif';
 
       var labelEl = document.createElement('label');
-      labelEl.textContent = 'Výběr záložek:';
+      labelEl.textContent = 'Výběr záložek (Ctrl+klik pro více):';
       labelEl.style.display = 'block';
       labelEl.style.marginBottom = '4px';
       labelEl.htmlFor = 'cht-rds-select';
@@ -201,16 +198,15 @@
       sidebarRegion.parentNode.insertBefore(container, sidebarRegion);
 
       applyHighlights();
-      debugBanner('hotovo, nalezeno ' + tabInfos.length + ' záložek');
 
     } catch (err) {
-      try {
-        debugBanner('CHYBA: ' + (err && err.message ? err.message : String(err)));
-      } catch (e) {}
+      // když něco spadne, aspoň to neodstřelí stránku
+      console.error('Riscon záložky – chyba skriptu:', err);
     }
   }
 
   function start() {
+    // malá prodleva, ať má APEX čas začít renderovat
     setTimeout(function () { mainAttempt(1); }, 300);
   }
 
