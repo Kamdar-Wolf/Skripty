@@ -1,13 +1,13 @@
 // ==UserScript==
-// @name         Riscon – zvýraznění záložek
-// @version      2.1
+// @name         Riscon: Rizika - zvýraznění záložek
+// @version      2.2
 // @description  Výběr záložek v dolní liště a jejich trvalé zvýraznění. Ovládání v pravém sidebaru.
 // @author       Martin
 // @match        https://*/ords/*/f?p=110:*
 // @match        https://www.riscon.cz/go/f?p=110*
 // @icon         https://www.riscon.cz//i/favicon.ico
-// @updateURL    https://raw.githubusercontent.com/Kamdar-Wolf/Skripty/refs/heads/main/Riscon%3A%20z%C3%A1lo%C5%BEky.js
-// @downloadURL  https://raw.githubusercontent.com/Kamdar-Wolf/Skripty/refs/heads/main/Riscon%3A%20z%C3%A1lo%C5%BEky.js
+// @updateURL    https://raw.githubusercontent.com/Kamdar-Wolf/Skripty/master/Riscon%3A%20zalozky.js
+// @downloadURL  https://raw.githubusercontent.com/Kamdar-Wolf/Skripty/master/Riscon%3A%20zalozky.js
 // @grant        none
 // ==/UserScript==
 
@@ -44,9 +44,8 @@
         document.querySelector('.topbar .apex-rds');
 
       if (!tabsUl) {
-        // APEX ještě nenačetl taby, zkusíme to znovu
         if (attempt < 40) {
-          setTimeout(function () { mainAttempt(attempt + 1); }, 250);
+          setTimeout(() => mainAttempt(attempt + 1), 250);
         }
         return;
       }
@@ -54,18 +53,14 @@
       var liNodes = Array.prototype.slice.call(
         tabsUl.querySelectorAll('li.apex-rds-item')
       );
-      if (!liNodes.length) {
-        return;
-      }
+      if (!liNodes.length) return;
 
-      // 2) Najít existující blok "Historie míry rizika" – použijeme ho jako kotvu
-      var sidebarRegion =
-        document.querySelector('#R4227506028705569666.sidebar-region-alt') ||
-        document.getElementById('R4227506028705569666');
+      // 2) NOVĚ: najít <td class="tbl-sidebar">
+      var sidebarRegion = document.querySelector('td.tbl-sidebar');
 
-      if (!sidebarRegion || !sidebarRegion.parentNode) {
+      if (!sidebarRegion) {
         if (attempt < 40) {
-          setTimeout(function () { mainAttempt(attempt + 1); }, 250);
+          setTimeout(() => mainAttempt(attempt + 1), 250);
         }
         return;
       }
@@ -114,7 +109,6 @@
           var span = li.querySelector('span');
 
           if (span) {
-            // odstranit starou hvězdičku
             span.textContent = span.textContent.replace(/^★\s*/, '');
           }
 
@@ -129,7 +123,7 @@
         });
       }
 
-      // 5) Vytvořit nový blok sidebar-region-alt se stejným vzhledem jako ostatní
+      // 5) Vytvoření UI
       var container = document.createElement('div');
       container.className = 'sidebar-region-alt';
       container.id = 'cht_rds_region';
@@ -146,7 +140,6 @@
       var content = document.createElement('div');
       content.className = 'content';
 
-      // vlastní obsah HUD
       var inner = document.createElement('div');
       inner.style.fontSize = '11px';
       inner.style.fontFamily = 'Tahoma,Arial,sans-serif';
@@ -167,9 +160,7 @@
         var opt = document.createElement('option');
         opt.value = info.key;
         opt.textContent = info.label;
-        if (selectedKeys.indexOf(info.key) !== -1) {
-          opt.selected = true;
-        }
+        if (selectedKeys.indexOf(info.key) !== -1) opt.selected = true;
         selectEl.appendChild(opt);
       });
 
@@ -186,7 +177,6 @@
 
       inner.appendChild(labelEl);
       inner.appendChild(selectEl);
-
       content.appendChild(inner);
       frame.appendChild(content);
       box.appendChild(frame);
@@ -194,20 +184,18 @@
       container.appendChild(h3);
       container.appendChild(box);
 
-      // vložit nový blok těsně NAD „Historie míry rizika“
-      sidebarRegion.parentNode.insertBefore(container, sidebarRegion);
+      // 6) Nové vložení: přímo do <td class="tbl-sidebar">
+      sidebarRegion.insertBefore(container, sidebarRegion.firstChild);
 
       applyHighlights();
 
     } catch (err) {
-      // když něco spadne, aspoň to neodstřelí stránku
       console.error('Riscon záložky – chyba skriptu:', err);
     }
   }
 
   function start() {
-    // malá prodleva, ať má APEX čas začít renderovat
-    setTimeout(function () { mainAttempt(1); }, 300);
+    setTimeout(() => mainAttempt(1), 300);
   }
 
   if (document.readyState === 'loading') {
