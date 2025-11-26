@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Riscon-JSON
+// @name         Riscon: JSON
 // @namespace    Automatické doplňování ve formátu JSON
 // @version      6.1
 // @description  Vyplní formulář z JSONu a vytěží data v APEX stylu.
