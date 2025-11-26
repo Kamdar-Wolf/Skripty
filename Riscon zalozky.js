@@ -6,8 +6,8 @@
 // @match        https://*/ords/*/f?p=110:*
 // @match        https://www.riscon.cz/go/f?p=110*
 // @icon         https://www.riscon.cz//i/favicon.ico
-// @updateURL    https://github.com/Kamdar-Wolf/Skripty/blob/main/Riscon_zalozky.js
-// @downloadURL  https://github.com/Kamdar-Wolf/Skripty/blob/main/Riscon_zalozky.js
+// @updateURL    https://raw.githubusercontent.com/Kamdar-Wolf/Skripty/master/Riscon_zalozky.js
+// @downloadURL  https://raw.githubusercontent.com/Kamdar-Wolf/Skripty/master/Riscon_zalozky.js
 // @grant        none
 // ==/UserScript==
 
