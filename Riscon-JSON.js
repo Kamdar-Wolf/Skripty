@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Riscon JSON
-// @namespace    cht.cz/apex/fill-json
+// @namespace    fill-json
 // @version      6.0
-// @description  Vyplní formulář z JSONu a vytěží data v APEX stylu. Popup vpravo dole, okamžité zobrazení, resizable, paměť velikosti. Oprava rolování a tlačítek. P6206_DESCRIPTION: max 1 trailing <br> (ne po </ul>/<ol>), P6206_LEGAL_REFERENCES: vždy právě 1 trailing <br>.
+// @description  Vyplní formulář z JSONu a vytěží data v APEX stylu..
 // @match        https://*/ords/*/f?p=110:*
 // @match        https://www.riscon.cz/go/f?p=110*
 // @icon         https://www.riscon.cz//i/favicon.ico
