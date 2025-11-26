@@ -2,7 +2,7 @@
 // @name         Riscon JSON
 // @namespace    fill-json
 // @version      6.0
-// @description  Vyplní formulář z JSONu a vytěží data v APEX stylu..
+// @description  Vyplní formulář z JSONu a vytěží data v APEX stylu.
 // @match        https://*/ords/*/f?p=110:*
 // @match        https://www.riscon.cz/go/f?p=110*
 // @icon         https://www.riscon.cz//i/favicon.ico
