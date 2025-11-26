@@ -6,8 +6,8 @@
 // @author       Martin
 // @match        https://www.riscon.cz/*
 // @icon         https://www.riscon.cz//i/favicon.ico
-// @updateURL https://raw.githubusercontent.com/Kamdar-Wolf/Skripty/master/Riscon%3A%20rizika.js
-// @downloadURL https://raw.githubusercontent.com/Kamdar-Wolf/Skripty/master/Riscon%3A%20rizika.js
+// @updateURL    https://raw.githubusercontent.com/Kamdar-Wolf/Skripty/master/Riscon%3A%20rizika.js
+// @downloadURL  https://raw.githubusercontent.com/Kamdar-Wolf/Skripty/master/Riscon%3A%20rizika.js
 // @grant        none
 // ==/UserScript==
 
