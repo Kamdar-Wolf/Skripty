@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Install Riscon_JSON</title>
+<script>
+fetch("https://raw.githubusercontent.com/Kamdar-Wolf/Skripty/master/Riscon_JSON.js")
+  .then(r => r.text())
+  .then(code => {
+    const blob = new Blob([code], { type: "application/javascript" });
+    const url = URL.createObjectURL(blob);
+    window.location = url + "#.user.js";
+  });
+</script>
+</head>
+<body>
+Instaluji...
+</body>
+</html>
