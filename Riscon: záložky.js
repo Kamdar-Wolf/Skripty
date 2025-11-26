@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         Riscon: Rizika - zvýraznění záložek
-// @version      2.2
-// @description  Výběr záložek v dolní liště a jejich trvalé zvýraznění. Ovládání v pravém sidebaru.
+// @version      2.5
+// @description  Výběr záložek.
 // @author       Martin
 // @match        https://*/ords/*/f?p=110:*
 // @match        https://www.riscon.cz/go/f?p=110*
 // @icon         https://www.riscon.cz//i/favicon.ico
-// @updateURL    https://github.com/Kamdar-Wolf/Skripty/blob/main/Riscon%3A%20z%C3%A1lo%C5%BEky.js
-// @downloadURL  https://github.com/Kamdar-Wolf/Skripty/blob/main/Riscon%3A%20z%C3%A1lo%C5%BEky.js
+// @updateURL    https://github.com/Kamdar-Wolf/Skripty/blob/main/Riscon_zalozky.js
+// @downloadURL  https://github.com/Kamdar-Wolf/Skripty/blob/main/Riscon_zalozky.js
 // @grant        none
 // ==/UserScript==
 
