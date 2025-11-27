@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Riscon: JSON
 // @namespace    Automatické doplňování ve formátu JSON
-// @version      6.1
+// @version      6.2
 // @description  Vyplní formulář z JSONu a vytěží data v APEX stylu.
 // @match        https://*/ords/*/f?p=110:*
 // @match        https://www.riscon.cz/go/f?p=110*
@@ -13,6 +13,16 @@
 
 (function () {
   'use strict';
+
+  // ========== VÝCHOZÍ ŠABLONA JSONU ==========
+  // Základní struktura: pole s jedním záznamem P6206_*
+  const DEFAULT_JSON_TEMPLATE = `[
+  {
+
+
+
+  }
+]`;
 
   // ---------- helpers ----------
   const pause = (ms) => new Promise(r => setTimeout(r, ms));
@@ -289,13 +299,22 @@
       const y = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
       e?.preventDefault?.(); e?.stopPropagation?.();
       fn?.();
-      // okamžitý návrat pozice (bez smooth/animací)
       window.scrollTo(0, y);
     };
 
+    // ---------- OTEVŘENÍ HUD + PŘEDVYPLNĚNÍ ŠABLONY ----------
     $('#apex-json-toggle').addEventListener('click', noJump(() => {
-      panel.style.display = (panel.style.display === 'none') ? 'block' : 'none';
+      const wasHidden = (panel.style.display === 'none' || !panel.style.display);
+      panel.style.display = wasHidden ? 'block' : 'none';
+
+      if (wasHidden) {
+        const ta = $('#apex-json-text', panel);
+        if (ta && !ta.value.trim()) {
+          ta.value = DEFAULT_JSON_TEMPLATE;
+        }
+      }
     }));
+
     $('#apex-json-close', panel).addEventListener('click', noJump(() => panel.style.display = 'none'));
     $('#apex-json-clear', panel).addEventListener('click', noJump(() => { $('#apex-json-text', panel).value = ''; }));
     $('#apex-json-extract', panel).addEventListener('click', noJump(() => {
