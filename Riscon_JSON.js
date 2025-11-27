@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Riscon: JSON
 // @namespace    Automatické doplňování ve formátu JSON
-// @version      6.2
+// @version      6.3
 // @description  Vyplní formulář z JSONu a vytěží data v APEX stylu.
 // @match        https://*/ords/*/f?p=110:*
 // @match        https://www.riscon.cz/go/f?p=110*
@@ -16,13 +16,11 @@
 
   // ========== VÝCHOZÍ ŠABLONA JSONU ==========
   // Základní struktura: pole s jedním záznamem P6206_*
-  const DEFAULT_JSON_TEMPLATE = `[
-  {
+  const DEFAULT_JSON_TEMPLATE = `{
 
 
 
-  }
-]`;
+  }`;
 
   // ---------- helpers ----------
   const pause = (ms) => new Promise(r => setTimeout(r, ms));
