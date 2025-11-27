@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Riscon: Rizika (barvy a popisky GKI)
+// @name         Riscon: Rizika (barvy, popisky GKI, legenda účinnosti opatření)
 // @namespace    
 // @version      3.2
 // @description  Sjednocený skript: úprava popisků přepínačů + barevné zvýraznění rizik podle hodnot + legenda účinnosti opatření.
