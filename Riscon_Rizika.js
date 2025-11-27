@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Riscon: Rizika (barvy a popisky GKI)
 // @namespace    
-// @version      3.1
+// @version      3.2
 // @description  Sjednocený skript: úprava popisků přepínačů + barevné zvýraznění rizik podle hodnot + legenda účinnosti opatření.
 // @author       Martin
 // @match        https://www.riscon.cz/*
@@ -170,7 +170,7 @@
             html += '<div style="margin-bottom:2px;">'
                 + '<span style="font-size:9px; color:#555; font-weight:bold;">'
                 + level.pct + '&nbsp;% – ' + level.label + ':</span><br>'
-                + '<span style="font-size:9px; color:#555; margin-left:24px; display:block;">'
+                + '<span style="font-size:9px; color:#555; margin-left:31px; display:block;">'
                 + level.desc + '</span>'
                 + '</div>';
         });
