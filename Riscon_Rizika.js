@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Riscon: Rizika (barvy a popisky GKI)
 // @namespace    
-// @version      3.0
-// @description  Sjednocený skript: úprava popisků přepínačů + barevné zvýraznění rizik podle hodnot.
+// @version      3.1
+// @description  Sjednocený skript: úprava popisků přepínačů + barevné zvýraznění rizik podle hodnot + legenda účinnosti opatření.
 // @author       Martin
 // @match        https://www.riscon.cz/*
 // @icon         https://www.riscon.cz//i/favicon.ico
@@ -14,7 +14,9 @@
 (function() {
 'use strict';
 
-// ========== 1) ÚPRAVA POPISKŮ PŘEPÍNAČŮ (čištění angličtiny) ==============
+// ==========================================================================
+// 1) ÚPRAVA POPISKŮ PŘEPÍNAČŮ (čištění angličtiny)
+// ==========================================================================
 
     // Bezpečné escapování textu pro regex
     function escapeRegex(str) {
@@ -93,7 +95,9 @@
         });
     }
 
-// ========== 2) BAREVNÉ ZVÝRAZNĚNÍ RIZIK V TABULCE ==========================
+// ==========================================================================
+// 2) BAREVNÉ ZVÝRAZNĚNÍ RIZIK V TABULCE
+// ==========================================================================
 
     // Pravidla barev
     function getColor(value) {
@@ -128,15 +132,147 @@
         });
     }
 
-// =============================== SPOUŠTĚNÍ ================================
+// ==========================================================================
+// 3) LEGENDA ÚČINNOSTI OPATŘENÍ (stránka 110:3110, blok „Doplňující informace“)
+// ==========================================================================
+
+    // Stránka, kde se legenda zobrazuje
+    const EFF_PAGE_REGEX = /f\?p=110:3110:/i;
+
+    // Konfigurace textu legendy
+    const EFF_LEVELS = [
+        {
+            pct: 25,
+            label: 'informování / značení',
+            desc: 'Informování o nebezpečí, značení, obecná pravidla a běžné OOPP.'
+        },
+        {
+            pct: 50,
+            label: 'organizace / postupy',
+            desc: 'Organizační opatření, pracovní postupy, specifická školení a OOPP pro konkrétní rizika.'
+        },
+        {
+            pct: 75,
+            label: 'technická opatření + kontroly',
+            desc: 'Technické bariéry, omezení kontaktu s nebezpečím, aktivní varování, pravidelné kontroly a údržba.'
+        },
+        {
+            pct: 95,
+            label: 'bezpečnostní systémy / vyloučení expozice',
+            desc: 'Bezpečnostní systémy a automatizace, zamezení vstupu osob, kontroly bezpečnostních prvků a dohled vedoucích.'
+        }
+    ];
+
+    function buildEffLegendHtml() {
+        let html = 'Koeficient účinnosti – orientační úrovně:<br>';
+
+        EFF_LEVELS.forEach(level => {
+            html += '<div style="margin-bottom:2px;">'
+                + '<span style="font-size:9px; color:#555; font-weight:bold;">'
+                + level.pct + '&nbsp;% – ' + level.label + ':</span><br>'
+                + '<span style="font-size:9px; color:#555; margin-left:24px; display:block;">'
+                + level.desc + '</span>'
+                + '</div>';
+        });
+
+        return html;
+    }
+
+    function initEffLegend() {
+        // Běhej jen na konkrétní stránce
+        if (!EFF_PAGE_REGEX.test(location.href)) return;
+
+        const sel = document.getElementById('P3110_DIRECT_MEASURES_EFF');
+        if (!sel) return;
+
+        if (document.getElementById('riscon-eff-legend')) return; // už je vytvořeno
+
+        // Region „Doplňující informace k uvedenému nebezpečí“
+        const region = document.getElementById('R3961503035566398367');
+        if (!region) return;
+
+        const content = region.querySelector('.rc-content-main') || region;
+
+        // Kotva pro absolutní pozicování
+        const cs = getComputedStyle(content);
+        if (cs.position === 'static') {
+            content.style.position = 'relative';
+        }
+
+        const legend = document.createElement('div');
+        legend.id = 'riscon-eff-legend';
+        legend.style.position = 'absolute';
+        legend.style.lineHeight = '1.3';
+        legend.style.whiteSpace = 'normal';
+        legend.style.zIndex = '10';
+        legend.innerHTML = buildEffLegendHtml();
+
+        content.appendChild(legend);
+
+        function recompute() {
+            const regionRect = content.getBoundingClientRect();
+            const selRect    = sel.getBoundingClientRect();
+
+            // Základní pozice – vedle selectu, o něco výš
+            let left = selRect.right - regionRect.left + 12;
+            if (left < 0) left = 0;
+
+            let top = selRect.top - regionRect.top - 30; // ty sis ladil cca 30
+            if (top < 0) top = 0;
+
+            let availableWidth = regionRect.right - regionRect.left - left - 12;
+
+            // Když je region úzký, shoď legendu pod select
+            if (availableWidth < 260) {
+                left = selRect.left - regionRect.left;
+                top  = selRect.bottom - regionRect.top + 4;
+                availableWidth = regionRect.right - regionRect.left - left - 12;
+            }
+
+            if (availableWidth < 220) {
+                availableWidth = 220;
+            }
+
+            legend.style.left  = left + 'px';
+            legend.style.top   = top + 'px';
+            legend.style.width = availableWidth + 'px';
+        }
+
+        recompute();
+        window.addEventListener('resize', recompute);
+    }
+
+    function startEffLegend() {
+        if (!EFF_PAGE_REGEX.test(location.href)) return;
+
+        let attempts = 0;
+        const maxAttempts = 20;
+
+        const timer = setInterval(() => {
+            attempts++;
+            initEffLegend();
+            if (document.getElementById('riscon-eff-legend') || attempts >= maxAttempts) {
+                clearInterval(timer);
+            }
+        }, 300);
+    }
+
+// ==========================================================================
+// 4) SPOUŠTĚNÍ
+// ==========================================================================
 
     window.addEventListener('load', () => {
         replaceLabels();
         colorize();
+        startEffLegend();
     });
+
     const observer = new MutationObserver(() => {
         replaceLabels();
         colorize();
+        // pro jistotu zkusíme legendu znovu vytvořit, pokud ještě není
+        initEffLegend();
     });
     observer.observe(document.body, { childList: true, subtree: true });
+
 })();
