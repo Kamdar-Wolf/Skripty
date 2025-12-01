@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Riscon: JSON
 // @namespace    Automatické doplňování ve formátu JSON
-// @version      6.3
+// @version      6.4
 // @description  Vyplní formulář z JSONu a vytěží data v APEX stylu.
 // @match        https://*/ords/*/f?p=110:*
 // @match        https://www.riscon.cz/go/f?p=110*
@@ -10,17 +10,11 @@
 // @downloadURL  https://raw.githubusercontent.com/Kamdar-Wolf/Skripty/refs/heads/main/Riscon_JSON.js
 // @grant        none
 // ==/UserScript==
-
 (function () {
   'use strict';
-
   // ========== VÝCHOZÍ ŠABLONA JSONU ==========
   // Základní struktura: pole s jedním záznamem P6206_*
-  const DEFAULT_JSON_TEMPLATE = `{
-
-
-
-  }`;
+  const DEFAULT_JSON_TEMPLATE = `  `;
 
   // ---------- helpers ----------
   const pause = (ms) => new Promise(r => setTimeout(r, ms));
@@ -35,14 +29,11 @@
   const normalizeTail = (id, val) => {
     const guard = (id === 'P6206_DESCRIPTION' || id === 'P6206_LEGAL_REFERENCES');
     let s = String(val ?? '');
-
     if (id === 'P6206_IMMEDIATE_ACTION') return s;
     if (!guard) return s;
     if (!s.trim()) return '';
-
     // odstraň trailing whitespace/&nbsp;/<br>
     s = s.replace(/(?:\s|&nbsp;|<br\s*\/?>|<\/br>)+$/gi, '');
-
     if (id === 'P6206_DESCRIPTION') {
       if (endsWithList(s)) return s; // po </ul>/<ol> nic nepřidávat
       return s + '<br>';
@@ -60,11 +51,9 @@
   const setVal = (id, val) => {
     const el = document.getElementById(id);
     if (!el) return;
-
     let v = val;
     if (id === 'P6206_EXACT_PLACE' || id === 'P6206_LEGAL_REFERENCES') v = stripColon(v);
     v = normalizeTail(id, v);
-
     if (el.tagName === 'SELECT') {
       const sval = String(v ?? '');
       Array.from(el.options).forEach(o => {
@@ -83,7 +72,6 @@
     let v = val;
     if (id === 'P6206_EXACT_PLACE' || id === 'P6206_LEGAL_REFERENCES') v = stripColon(v);
     v = normalizeTail(id, v);
-
     if (window.CKEDITOR?.instances?.[id]) { CKEDITOR.instances[id].setData(v); return; }
     setVal(id, v);
   };
@@ -94,22 +82,61 @@
     return stripColon(div.textContent || '');
   };
 
-  // ---------- tolerant JSON parser ----------
+  // ---------- tolerant JSON parser with auto-wrapping ----------
   function parseMaybeRelaxedJSON(text) {
-    try { return JSON.parse(text); } catch {}
+    let input = String(text ?? '').trim();
+
+    // Pokud je vstup prázdný
+    if (!input) {
+      throw new Error('Prázdný JSON.');
+    }
+
+    // Automatické doplnění závorek, pokud chybí
+    const startsWithBrace = input.startsWith('{') || input.startsWith('[');
+    const endsWithBrace = input.endsWith('}') || input.endsWith(']');
+
+    if (!startsWithBrace && !endsWithBrace) {
+      // Žádné závorky - obalíme {}
+      input = '{' + input + '}';
+    } else if (startsWithBrace && !endsWithBrace) {
+      // Pouze počáteční závorka - doplníme koncovou
+      input = input + (input.startsWith('{') ? '}' : ']');
+    } else if (!startsWithBrace && endsWithBrace) {
+      // Pouze koncová závorka - doplníme počáteční
+      input = (input.endsWith('}') ? '{' : '[') + input;
+    }
+    // Jinak má obě závorky nebo je to pole - necháme beze změny
+
+    // Zkusíme standardní JSON parse
     try {
-      let t = String(text ?? '').replace(/\r\n/g, '\n');
+      return JSON.parse(input);
+    } catch {}
+
+    // Pokud selže, použijeme relaxed parsing
+    try {
+      let t = input.replace(/\r\n/g, '\n');
       // escape syrové \n uvnitř stringů
       let out = '', inStr = false, esc = false;
       for (let i = 0; i < t.length; i++) {
         const ch = t[i];
-        if (!inStr) { if (ch === '"') inStr = true, out += ch; else out += ch; }
-        else {
-          if (esc) { out += ch; esc = false; }
-          else if (ch === '\\') { out += ch; esc = true; }
-          else if (ch === '"') { out += ch; inStr = false; }
-          else if (ch === '\n') out += '\\n';
+        if (!inStr) {
+          if (ch === '"') inStr = true, out += ch;
           else out += ch;
+        } else {
+          if (esc) {
+            out += ch;
+            esc = false;
+          } else if (ch === '\\') {
+            out += ch;
+            esc = true;
+          } else if (ch === '"') {
+            out += ch;
+            inStr = false;
+          } else if (ch === '\n') {
+            out += '\\n';
+          } else {
+            out += ch;
+          }
         }
       }
       t = out
@@ -118,7 +145,7 @@
         .replace(/,\s*([}\]])/g, '$1');                          // trailing comma
       return JSON.parse(t);
     } catch (e) {
-      throw new Error('Chybný JSON – zkontroluj uvozovky/konce řádků.');
+      throw new Error('Chybný JSON – zkontroluj formát: "P0000_DESCRIPTION": "text",');
     }
   }
 
@@ -144,7 +171,6 @@
       const id = header.match(/ID:\s*(\d+)/)?.[1] || '';
       const gravity = ['Silná stránka', 'Slabá stránka', 'Komentář', 'Neshoda', 'Závažná neshoda']
         .find(g => header.toLowerCase().includes(g.toLowerCase())) || '';
-
       const pick = (label) => {
         const strongs = td.querySelectorAll('strong');
         for (const s of strongs) {
@@ -163,12 +189,10 @@
         }
         return '';
       };
-
       const desc  = pick('Popis');
       const place = htmlToText(pick('Místo'));
       const refs  = htmlToText(pick('Odkazy'));
       const act   = pick('Okamžité');
-
       out.push({
         P6206_RANKING: id,
         P6206_DESCRIPTION: desc,
@@ -204,8 +228,14 @@
       return { w: Math.max(520, w), h: Math.max(280, h) };
     } catch { return null; }
   }
+
   function saveSize(panel) {
-    try { localStorage.setItem(SIZE_KEY, JSON.stringify({ w: panel.offsetWidth, h: panel.offsetHeight })); } catch {}
+    try {
+      localStorage.setItem(SIZE_KEY, JSON.stringify({
+        w: panel.offsetWidth,
+        h: panel.offsetHeight
+      }));
+    } catch {}
   }
 
   function clampPanel(panel) {
@@ -266,7 +296,6 @@
         resize: 'both',
         transition: 'none'
       });
-
       panel.innerHTML = `
         <div class="rc-blue-top"><div class="rc-blue-top-r">
           <div class="rc-title">Riscon JSON</div>
@@ -275,7 +304,7 @@
         <div class="rc-body" style="height:calc(100% - 50px); display:flex; flex-direction:column;">
           <div class="rc-body-r" style="flex:1 1 auto; display:flex; flex-direction:column;">
             <div class="rc-content-main" style="flex:1 1 auto; padding:8px; display:flex; flex-direction:column; gap:8px;">
-              <div style="font-size:12px;opacity:.85;">Vlož validní JSON (HTML uvnitř je OK). Při chybě se provede „měkká“ oprava.</div>
+              <div style="font-size:12px;opacity:.85;">Vlož JSON data (závorky { } jsou volitelné). Při chybě se provede automatická oprava.</div>
               <div style="flex:1 1 auto; min-height:140px; display:flex;">
                 <textarea id="apex-json-text" style="flex:1 1 auto; width:100%; height:100%; font-family:monospace; border:1px solid #ccc; border-radius:4px; padding:6px; resize:none;"></textarea>
               </div>
@@ -295,7 +324,8 @@
     // bez rolování (okamžitě)
     const noJump = (fn) => (e) => {
       const y = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
-      e?.preventDefault?.(); e?.stopPropagation?.();
+      e?.preventDefault?.();
+      e?.stopPropagation?.();
       fn?.();
       window.scrollTo(0, y);
     };
@@ -304,7 +334,6 @@
     $('#apex-json-toggle').addEventListener('click', noJump(() => {
       const wasHidden = (panel.style.display === 'none' || !panel.style.display);
       panel.style.display = wasHidden ? 'block' : 'none';
-
       if (wasHidden) {
         const ta = $('#apex-json-text', panel);
         if (ta && !ta.value.trim()) {
@@ -315,13 +344,18 @@
 
     $('#apex-json-close', panel).addEventListener('click', noJump(() => panel.style.display = 'none'));
     $('#apex-json-clear', panel).addEventListener('click', noJump(() => { $('#apex-json-text', panel).value = ''; }));
+
     $('#apex-json-extract', panel).addEventListener('click', noJump(() => {
       const data = extractBlocks();
       $('#apex-json-text', panel).value = data.length ? format(data) : '// Nic nenalezeno.';
     }));
+
     $('#apex-json-fill', panel).addEventListener('click', noJump(async () => {
-      try { await fillForm($('#apex-json-text', panel).value); }
-      catch (e) { alert('Chybný JSON.\n' + (e?.message || '')); }
+      try {
+        await fillForm($('#apex-json-text', panel).value);
+      } catch (e) {
+        alert('Chybný JSON.\n' + (e?.message || ''));
+      }
     }));
 
     // uložení velikosti + limity
@@ -345,6 +379,7 @@
       if (fixed !== el.value) { el.value = fixed; fire(el); }
     });
   }
+
   function attachBrGuardToCKE(id) {
     if (!window.CKEDITOR?.instances?.[id]) return;
     const inst = CKEDITOR.instances[id];
@@ -353,6 +388,7 @@
       if (fixed !== inst.getData()) inst.setData(fixed);
     });
   }
+
   function bootstrapBrGuards() {
     attachBrGuardToTextarea('P6206_DESCRIPTION');
     attachBrGuardToTextarea('P6206_LEGAL_REFERENCES');
