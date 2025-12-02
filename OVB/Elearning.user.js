@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name           OVB elearning – aktivní stránka
-// @namespace      https://github.com/Kamdar-Wolf/Skripty/OVB
-// @version        1.2
+// @namespace      https://github.com/Kamdar-Wolf/Skripty
+// @version        1.2.1
 // @description    Odstraní nepotřebné prvky, simuluje aktivitu a automaticky potvrzuje okna
 // @author         Martin
 // @copyright      2025, Martin
 // @license        Proprietary - internal use only
-// @homepageURL    https://github.com/Kamdar-Wolf/Skripty
+// @homepageURL    https://github.com/Kamdar-Wolf/Skripty/tree/main/OVB
 // @website        https://iczv.vsfs.cz
 // @source         https://raw.githubusercontent.com/Kamdar-Wolf/Skripty/master/OVB/Elearning.user.js
 // @supportURL     https://github.com/Kamdar-Wolf/Skripty/issues
