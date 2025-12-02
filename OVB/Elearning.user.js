@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name           OVB elearning – aktivní stránka
+// @name           OVB elearning – videa
 // @namespace      https://github.com/Kamdar-Wolf/Skripty
-// @version        1.2.1
+// @version        1.2.2
 // @description    Odstraní nepotřebné prvky, simuluje aktivitu a automaticky potvrzuje okna
 // @author         Martin
 // @copyright      2025, Martin
