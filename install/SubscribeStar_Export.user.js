@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SubscribeStar Export
 // @namespace    ss-export-fullhead
-// @version      2.1.1
+// @version      2.1.2
 // @updateURL    https://raw.githubusercontent.com/Kamdar-Wolf/Skripty/codex/fix-script-to-download-posts-correctly/install/SubscribeStar_Export.user.js
 // @downloadURL  https://raw.githubusercontent.com/Kamdar-Wolf/Skripty/codex/fix-script-to-download-posts-correctly/install/SubscribeStar_Export.user.js
 // @match        https://subscribestar.adult/*
@@ -280,8 +280,11 @@
     const o = LIVE_LAYOUT || {};
     const fit = doc.createElement('style');
     fit.textContent = `
-      html,body{margin:0;padding:0}
-      .ssx-center{ max-width:1000px; margin:0 auto; padding:0 16px; }
+      html,body{margin:0;padding:0;width:100%;min-width:0 !important;}
+      *, *::before, *::after{ box-sizing:border-box; }
+      body{ display:flex; justify-content:center; }
+      .ssx-center{ max-width:1000px; width:100% !important; margin:0 auto; padding:0 16px; }
+      .ssx-center > *{ max-width:100%; width:100% !important; margin-left:auto !important; margin-right:auto !important; }
       /* media fit */
       .section-body img, .section-body video, .section-body canvas, .section-body iframe,
       .post-uploads img, .trix-content img, .post-content img, .post__content img { max-width:100% !important; height:auto !important; }
