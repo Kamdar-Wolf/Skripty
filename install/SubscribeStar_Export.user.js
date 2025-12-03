@@ -1,6 +1,9 @@
 // ==UserScript==
-// @name         SubscribeStar Export – HTML+IMG + Folder + NewOnly + ListLinks + Center (v2.1.1)
+// @name         SubscribeStar Export
 // @namespace    ss-export-fullhead
+// @version      2.1.1
+// @updateURL    https://raw.githubusercontent.com/Kamdar-Wolf/Skripty/codex/fix-script-to-download-posts-correctly/install/SubscribeStar_Export.user.js
+// @downloadURL  https://raw.githubusercontent.com/Kamdar-Wolf/Skripty/codex/fix-script-to-download-posts-correctly/install/SubscribeStar_Export.user.js
 // @match        https://subscribestar.adult/*
 // @match        https://subscribestar.com/*
 // @grant        GM_xmlhttpRequest
@@ -278,7 +281,7 @@
     const fit = doc.createElement('style');
     fit.textContent = `
       html,body{margin:0;padding:0}
-      .ssx-center{ max-width:1100px; margin:0 auto; padding:0 16px; }
+      .ssx-center{ max-width:1000px; margin:0 auto; padding:0 16px; }
       /* media fit */
       .section-body img, .section-body video, .section-body canvas, .section-body iframe,
       .post-uploads img, .trix-content img, .post-content img, .post__content img { max-width:100% !important; height:auto !important; }
