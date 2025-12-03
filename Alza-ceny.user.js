@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Alza: Skrýt všechny ceny
 // @namespace    https://github.com/Kamdar-Wolf/Skripty
-// @version      1.0.1
+// @version      1.0.3
 // @description  Skryje / anonymizuje veškeré ceny na alza.cz
 // @author       Martin
 // @match        https://www.alza.cz/*
@@ -34,7 +34,6 @@
       .browsingitem .price,
       .c-price__wrap,
       .c-prices__price,
-      .price__price-box-wrapper,
       .price-normal,
       .price-action,
       .price-old,
@@ -52,6 +51,10 @@
       }
 
       .price-detail__row.price-detail__row--with-installments {
+        display: none !important;
+      }
+
+      .price__price-box-wrapper {
         display: none !important;
       }
 
