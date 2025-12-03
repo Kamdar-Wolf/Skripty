@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         SubscribeStar Export – HTML+IMG + Folder + NewOnly + ListLinks + Center (v2.4.4)
+// @name         SubscribeStar Export – HTML+IMG + Folder + NewOnly + ListLinks + Center (v2.1.1)
 // @namespace    ss-export-fullhead
 // @match        https://subscribestar.adult/*
 // @match        https://subscribestar.com/*
@@ -31,36 +31,16 @@
   }
   function setToggles(next){ try{ GM_setValue(STORE_TOGGLES, next); }catch{} }
 
-  function findAuthorHost(){
-    const secs = Array.from(document.querySelectorAll('.section.for-single_post_sidebar, .for-single_post_sidebar.section'));
-    for (const sec of secs){
-      const h = sec.querySelector('.section-title_text');
-      if (h && /author/i.test(h.textContent||'')) return sec.querySelector('.section-body') || sec;
-    }
-    // obecnější sidebar
-    const side = document.querySelector('.for-single_post_sidebar .section-body, .for-single_post_sidebar, .section-body');
-    return side || null;
-  }
-
   function ensureMounted(){
     if (mounted) return;
     hostEl = document.createElement('div');
     hostEl.className = 'ssg-wrap';
     shadow = hostEl.attachShadow({mode:'open'});
 
-    // Primární pokus – vložit „k autorovi“
-    const target = findAuthorHost();
-    if (target){
-      target.appendChild(hostEl);
-      hostEl.style.position = 'relative';
-      hostEl.style.zIndex = '2147483647';
-    } else {
-      // Fallback – plovoucí panel vpravo dole
-      document.body.appendChild(hostEl);
-      Object.assign(hostEl.style, {
-        position: 'fixed', right: '16px', bottom: '16px', zIndex: '2147483647'
-      });
-    }
+    document.body.appendChild(hostEl);
+    Object.assign(hostEl.style, {
+      position: 'fixed', left: '16px', bottom: '16px', zIndex: '2147483647'
+    });
 
     shadow.innerHTML = `
       <style>
@@ -105,29 +85,16 @@
     log('UI připraveno. Otevři detail /posts/{id} nebo list autora.', 'ok');
   }
 
-  function remountIfNeeded(){
-    // zkus znovu ukotvit do sidebaru, pokud jsme nyní jen plovoucí
-    if (!hostEl || !shadow) return;
-    const inBodyFloating = hostEl.parentElement === document.body;
-    const target = findAuthorHost();
-    if (inBodyFloating && target){
-      target.appendChild(hostEl);
-      hostEl.style.position = 'relative';
-      hostEl.style.right = '';
-      hostEl.style.bottom = '';
-    }
-  }
-
   function watchForSPA(){
     // Reakce na pushState/replaceState/popstate (SPA navigace)
     const _ps = history.pushState;
-    history.pushState = function(...args){ const r = _ps.apply(this,args); setTimeout(()=>{ ensureMounted(); remountIfNeeded(); }, 50); return r; };
+    history.pushState = function(...args){ const r = _ps.apply(this,args); setTimeout(()=>{ ensureMounted(); }, 50); return r; };
     const _rs = history.replaceState;
-    history.replaceState = function(...args){ const r = _rs.apply(this,args); setTimeout(()=>{ ensureMounted(); remountIfNeeded(); }, 50); return r; };
-    window.addEventListener('popstate', ()=>{ setTimeout(()=>{ ensureMounted(); remountIfNeeded(); }, 50); });
+    history.replaceState = function(...args){ const r = _rs.apply(this,args); setTimeout(()=>{ ensureMounted(); }, 50); return r; };
+    window.addEventListener('popstate', ()=>{ setTimeout(()=>{ ensureMounted(); }, 50); });
 
     // Pozorování DOM změn (lazy load sekcí)
-    const mo = new MutationObserver(()=>{ remountIfNeeded(); });
+    const mo = new MutationObserver(()=>{});
     mo.observe(document.documentElement, { childList:true, subtree:true });
   }
 
@@ -395,22 +362,10 @@
     const htmlName = stableHtmlName(id);
     const niceBase = humanTitleFrom(fetched,id);
 
-    // „Jen nové“: přeskočit jen když sedí hash A víme, že soubor existuje (ve vybrané složce)
+    // „Jen nové“: přeskočit, pokud již máme hash uložený
     if (cbNew.checked && store[id] && store[id].hash === h){
-      if (cbUseFs.checked){
-        if (DIR_HANDLE){
-          if (await fsExists(htmlName)) {
-            log(`Přeskočeno (existuje & beze změny): #${id} ⇒ ${htmlName}`,'warn');
-            return;
-          } else {
-            log(`„Jen nové“: soubor ${htmlName} ve složce nenalezen → stáhnu znovu.`,'warn');
-          }
-        } else {
-          log(`„Jen nové“: složka je aktivní, ale není znovu vybraná – nebudu přeskakovat.`,'warn');
-        }
-      } else {
-        log(`„Jen nové“ mimo složku: nelze ověřit existenci → nebudu přeskakovat.`,'warn');
-      }
+      log(`Přeskočeno (dříve staženo & beze změny): #${id} ⇒ ${store[id].name||htmlName}`,'warn');
+      return;
     }
 
     log(`Zpracovávám feed #${id} ⇒ ${htmlName}`);
