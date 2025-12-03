@@ -26,8 +26,8 @@
   let shadow = null;
 
   function getToggles(){
-    try{ return GM_getValue(STORE_TOGGLES, { useFs:false, newOnly:true, limit:20 }); }
-    catch{ return {useFs:false,newOnly:true,limit:20}; }
+    try{ return GM_getValue(STORE_TOGGLES, { useFs:false, newOnly:true, limit:20, newestFirst:true }); }
+    catch{ return {useFs:false,newOnly:true,limit:20,newestFirst:true}; }
   }
   function setToggles(next){ try{ GM_setValue(STORE_TOGGLES, next); }catch{} }
 
@@ -89,6 +89,7 @@
           <label><input id="usefs" type="checkbox"> Ukládat do složky</label>
           <label><input id="newonly" type="checkbox" checked> Jen nové</label>
           <label>Limit: <input id="limit" type="number" min="1" step="1" value="20"></label>
+          <button id="order" title="Přepíná pořadí stahování">Pořadí</button>
         </div>
         <div class="row">
           <button id="runDetail">Stáhnout aktuální feed</button>
@@ -131,7 +132,8 @@
   }
 
   /* ================== UI logic ================== */
-  let btnPick, cbUseFs, cbNew, inpLim, btnDetail, btnList, logBox;
+  let btnPick, cbUseFs, cbNew, inpLim, btnDetail, btnList, logBox, btnOrder;
+  let isNewestFirst = true;
   function $(sel){ return shadow.querySelector(sel); }
   function log(msg, cls){
     const d=document.createElement('div'); if(cls)d.className=cls; d.textContent=msg;
@@ -145,25 +147,41 @@
     inpLim    = $('#limit');
     btnDetail = $('#runDetail');
     btnList   = $('#runList');
+    btnOrder  = $('#order');
     logBox    = $('#log');
 
     const t = getToggles();
     cbUseFs.checked = !!t.useFs;
     cbNew.checked   = t.newOnly!==false;
     inpLim.value    = String(t.limit ?? 20);
+    isNewestFirst   = t.newestFirst!==false;
+
+    function persistToggles(){
+      setToggles({ useFs: cbUseFs.checked, newOnly: cbNew.checked, limit: Number(inpLim.value)||20, newestFirst: isNewestFirst });
+    }
+
+    function refreshOrderLabel(){
+      btnOrder.textContent = isNewestFirst ? 'Pořadí: od nejnovějších' : 'Pořadí: od nejstarších';
+    }
+    refreshOrderLabel();
 
     [cbUseFs, cbNew].forEach(inp=>{
       inp.addEventListener('click', e=>{ e.stopPropagation(); e.stopImmediatePropagation(); }, true);
       inp.addEventListener('change', ()=>{
-        setToggles({ useFs: cbUseFs.checked, newOnly: cbNew.checked, limit: Number(inpLim.value)||20 });
+        persistToggles();
         log(`Nastavení uloženo: složka=${cbUseFs.checked?'ANO':'NE'}, jen-nové=${cbNew.checked?'ANO':'NE'}`, 'ok');
       });
     });
     inpLim.addEventListener('change', ()=>{
       const v = Math.max(1, Math.floor(Number(inpLim.value)||20));
       inpLim.value = String(v);
-      setToggles({ useFs: cbUseFs.checked, newOnly: cbNew.checked, limit: v });
+      persistToggles();
       log(`Limit uložen: ${v}`, 'ok');
+    });
+
+    btnOrder.addEventListener('click', (e)=>{ e.stopPropagation();
+      isNewestFirst = !isNewestFirst; refreshOrderLabel(); persistToggles();
+      log(`Pořadí stahování: ${isNewestFirst?'od nejnovějších':'od nejstarších'}`,'ok');
     });
 
     btnPick.addEventListener('click', async (e)=>{ e.stopPropagation();
@@ -215,7 +233,7 @@
   async function pickDirectory(){
     if (!('showDirectoryPicker' in window)) throw new Error('Folder picker není podporován tímto prohlížečem');
     DIR_HANDLE = await window.showDirectoryPicker({ id:'ss-export' });
-    cbUseFs.checked = true; setToggles({ useFs:true, newOnly: cbNew.checked, limit: Number(inpLim.value)||20 });
+    cbUseFs.checked = true; setToggles({ useFs:true, newOnly: cbNew.checked, limit: Number(inpLim.value)||20, newestFirst: isNewestFirst });
   }
   async function writeToDir(pathName, blob){
     if (!DIR_HANDLE) throw new Error('Složka není vybrána');
@@ -518,12 +536,26 @@
       return false;
     }
 
+    async function scrollForMore(){
+      const before = collectPostIdsFromLinks().length;
+      window.scrollTo({ top: document.documentElement.scrollHeight, behavior:'smooth' });
+      const t0 = Date.now();
+      while(Date.now()-t0<2600){
+        await sleep(350);
+        const now = collectPostIdsFromLinks().length;
+        if (now > before) return true;
+      }
+      return false;
+    }
+
     // pokud nemáme dost, zkus načíst víc karet
     let guard = 0;
-    while(ids.length < desired && guard++ < 8){
-      const ok = await clickPostsMore();
-      if (!ok) break;
+    while(ids.length < desired && guard++ < 12){
+      const clicked = await clickPostsMore();
+      const scrolled = await scrollForMore();
       ids = collectPostIdsFromLinks(desired);
+      if (ids.length >= desired) break;
+      if (!clicked && !scrolled) break;
     }
 
     if (!ids.length){
@@ -531,7 +563,9 @@
       return;
     }
 
-    log(`Ke stažení (podle odkazů): ${ids.length} postů (limit ${desired}).`);
+    if (!isNewestFirst) ids = ids.slice().reverse();
+
+    log(`Ke stažení (podle odkazů): ${ids.length} postů (limit ${desired}). Pořadí: ${isNewestFirst?'nejnovější → nejstarší':'nejstarší → nejnovější'}.`);
     for (const id of ids){
       try{ await downloadPostById(id); }
       catch(e){ log(`Chyba u #${id}: ${e.message||e}`,'err'); }
