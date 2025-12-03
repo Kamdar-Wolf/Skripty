@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Alza: Skrýt všechny ceny
 // @namespace    https://github.com/Kamdar-Wolf/Skripty
-// @version      1.0
+// @version      1.0.1
 // @description  Skryje / anonymizuje veškeré ceny na alza.cz
 // @author       Martin
 // @match        https://www.alza.cz/*
@@ -11,8 +11,8 @@
 // @supportURL   https://github.com/Kamdar-Wolf/Skripty/issues
 // @icon         https://ultreia.cz/wp-content/uploads/2021/01/Alza_01.png
 // @icon64       https://ultreia.cz/wp-content/uploads/2021/01/Alza_01.png
-// @updateURL    https://raw.githubusercontent.com/Kamdar-Wolf/Skripty/master/Alza-ceny.js
-// @downloadURL  https://raw.githubusercontent.com/Kamdar-Wolf/Skripty/master/Alza-ceny.js
+// @updateURL    https://raw.githubusercontent.com/Kamdar-Wolf/Skripty/master/Alza-ceny.user.js
+// @downloadURL  https://raw.githubusercontent.com/Kamdar-Wolf/Skripty/master/Alza-ceny.user.js
 // @grant        none
 // ==/UserScript==
 
