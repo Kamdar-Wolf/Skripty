@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SubscribeStar Export
 // @namespace    ss-export-fullhead
-// @version      2.1.2
+// @version      2.1.3
 // @updateURL    https://raw.githubusercontent.com/Kamdar-Wolf/Skripty/codex/fix-script-to-download-posts-correctly/install/SubscribeStar_Export.user.js
 // @downloadURL  https://raw.githubusercontent.com/Kamdar-Wolf/Skripty/codex/fix-script-to-download-posts-correctly/install/SubscribeStar_Export.user.js
 // @match        https://subscribestar.adult/*
@@ -280,10 +280,11 @@
     const o = LIVE_LAYOUT || {};
     const fit = doc.createElement('style');
     fit.textContent = `
-      html,body{margin:0;padding:0;width:100%;min-width:0 !important;}
+      :root, html, body{ margin:0; padding:0; width:100%; min-width:0 !important; max-width:1000px !important; box-sizing:border-box; }
       *, *::before, *::after{ box-sizing:border-box; }
-      body{ display:flex; justify-content:center; }
-      .ssx-center{ max-width:1000px; width:100% !important; margin:0 auto; padding:0 16px; }
+      body{ display:block !important; margin-left:auto !important; margin-right:auto !important; overflow-x:hidden !important; }
+      #app, .site-wrapper, .site, #root{ max-width:1000px !important; margin:0 auto !important; width:100% !important; }
+      .ssx-center{ max-width:1000px !important; width:100% !important; margin:0 auto !important; padding:0 16px; }
       .ssx-center > *{ max-width:100%; width:100% !important; margin-left:auto !important; margin-right:auto !important; }
       /* media fit */
       .section-body img, .section-body video, .section-body canvas, .section-body iframe,
