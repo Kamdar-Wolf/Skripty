@@ -289,7 +289,7 @@
       #HEADER, header, .HEADER, .site-header { margin-left:auto !important; margin-right:auto !important; text-align:center !important; display:block; }
       .section.for-single_post, .for-single_post.section, .post.wrapper.is-single, .post.wrapper {
         margin-left:auto !important; margin-right:auto !important;
-        ${o.secW ? `max-width:${o.secW} !important; width:100% !important;` : ''}
+        max-width:1000px !important; width:100% !important;
         padding-left:${o.secPL||'15px'} !important; padding-right:${o.secPR||'15px'} !important;
       }
       ${o.sbPL||o.sbPR ? `.section-body { ${o.sbPL?`padding-left:${o.sbPL} !important;`:''} ${o.sbPR?`padding-right:${o.sbPR} !important;`:''} }` : ''}
