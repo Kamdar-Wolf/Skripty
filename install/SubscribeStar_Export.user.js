@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SubscribeStar Export
 // @namespace    ss-export-fullhead
-// @version      2.1.3
+// @version      2.1.4
 // @updateURL    https://raw.githubusercontent.com/Kamdar-Wolf/Skripty/codex/fix-script-to-download-posts-correctly/install/SubscribeStar_Export.user.js
 // @downloadURL  https://raw.githubusercontent.com/Kamdar-Wolf/Skripty/codex/fix-script-to-download-posts-correctly/install/SubscribeStar_Export.user.js
 // @match        https://subscribestar.adult/*
@@ -27,12 +27,18 @@
   let mounted = false;
   let hostEl = null;
   let shadow = null;
+  let panelEl = null;
+  let resizeObs = null;
 
   function getToggles(){
-    try{ return GM_getValue(STORE_TOGGLES, { useFs:false, newOnly:true, limit:20, newestFirst:true }); }
-    catch{ return {useFs:false,newOnly:true,limit:20,newestFirst:true}; }
+    try{ return GM_getValue(STORE_TOGGLES, { useFs:false, newOnly:true, limit:20, newestFirst:true, panelW:null, panelH:null }); }
+    catch{ return {useFs:false,newOnly:true,limit:20,newestFirst:true,panelW:null,panelH:null}; }
   }
   function setToggles(next){ try{ GM_setValue(STORE_TOGGLES, next); }catch{} }
+  function updateToggles(part){ const cur=getToggles(); setToggles({ ...cur, ...part }); }
+  function readPanelSize(){ if(!panelEl) return {}; const r=panelEl.getBoundingClientRect(); return { panelW:`${Math.round(r.width)}px`, panelH:`${Math.round(r.height)}px` }; }
+  function applyPanelSize(){ const t=getToggles(); if(panelEl){ if(t.panelW) panelEl.style.width=t.panelW; if(t.panelH) panelEl.style.height=t.panelH; } }
+  function watchPanelResize(){ if(!panelEl || !window.ResizeObserver) return; if(resizeObs) resizeObs.disconnect(); resizeObs=new ResizeObserver((entries)=>{ const e=entries[0]; if(!e) return; const w=Math.round(e.contentRect.width); const h=Math.round(e.contentRect.height); updateToggles({ panelW:`${w}px`, panelH:`${h}px` }); }); resizeObs.observe(panelEl); }
 
   function ensureMounted(){
     if (mounted) return;
@@ -51,16 +57,20 @@
         .panel{
           font: 13px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Arial;
           color:#111; background:#fafafa; border:1px solid #e5e7eb; border-radius:10px;
-          padding:12px; min-width: 320px; box-shadow: 0 6px 18px rgba(0,0,0,.12);
+          padding:12px; min-width: 320px; max-width: 90vw; box-shadow: 0 6px 18px rgba(0,0,0,.12);
+          resize: both; overflow: auto; box-sizing: border-box; display:flex; flex-direction:column; gap:10px;
+          width: var(--ssx-panel-w, 360px); height: var(--ssx-panel-h, auto);
         }
-        .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
+        .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:8px; width:100%; }
         .row:last-child{ margin-bottom:0; }
+        .row > *{ flex: 0 1 auto; }
         button{ background:#111; color:#fff; border-radius:8px; padding:9px 12px; cursor:pointer; font-weight:600; border:0; }
+        .row button{ flex:1 1 0; }
         button:disabled{ opacity:.6; cursor:default; }
         label{ display:inline-flex; align-items:center; gap:6px; padding:4px 6px; border-radius:6px; background:#fff; border:1px solid #e5e7eb; }
         input[type="checkbox"]{ width:16px; height:16px; cursor:pointer; }
         input[type="number"]{ width:90px; padding:6px 8px; border:1px solid #e5e7eb; border-radius:6px; }
-        .log{ max-height:300px; overflow:auto; padding:8px 10px; border:1px solid #e5e7eb; border-radius:8px; background:#0e0e10; color:#ddd; font:12px/1.35 Consolas,monospace; }
+        .log{ max-height:300px; overflow:auto; padding:8px 10px; border:1px solid #e5e7eb; border-radius:8px; background:#0e0e10; color:#ddd; font:12px/1.35 Consolas,monospace; width:100%; box-sizing:border-box; flex:1 1 auto; }
         .ok{ color:#4caf50 } .warn{ color:#ffb300 } .err{ color:#f44336 }
         .hdr{ font-weight:700; margin-bottom:8px; }
         .small{ opacity:.7; font-size:12px; }
@@ -82,6 +92,10 @@
         <div id="log" class="log"></div>
       </div>
     `;
+
+    panelEl = shadow.querySelector('.panel');
+    applyPanelSize();
+    watchPanelResize();
 
     wireUI();
     mounted = true;
@@ -127,7 +141,7 @@
     isNewestFirst   = t.newestFirst!==false;
 
     function persistToggles(){
-      setToggles({ useFs: cbUseFs.checked, newOnly: cbNew.checked, limit: Number(inpLim.value)||20, newestFirst: isNewestFirst });
+      updateToggles({ useFs: cbUseFs.checked, newOnly: cbNew.checked, limit: Number(inpLim.value)||20, newestFirst: isNewestFirst, ...readPanelSize() });
     }
 
     function refreshOrderLabel(){
@@ -203,7 +217,7 @@
   async function pickDirectory(){
     if (!('showDirectoryPicker' in window)) throw new Error('Folder picker není podporován tímto prohlížečem');
     DIR_HANDLE = await window.showDirectoryPicker({ id:'ss-export' });
-    cbUseFs.checked = true; setToggles({ useFs:true, newOnly: cbNew.checked, limit: Number(inpLim.value)||20, newestFirst: isNewestFirst });
+    cbUseFs.checked = true; updateToggles({ useFs:true, newOnly: cbNew.checked, limit: Number(inpLim.value)||20, newestFirst: isNewestFirst, ...readPanelSize() });
   }
   async function writeToDir(pathName, blob){
     if (!DIR_HANDLE) throw new Error('Složka není vybrána');
