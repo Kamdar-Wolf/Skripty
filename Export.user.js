@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         SubscribeStar Export
-// @namespace    ss-export-fullhead
-// @version      1.1.5
+// @namespace    export-fullhead
+// @version      1.1.6
 // @updateURL    https://github.com/Kamdar-Wolf/Skripty/raw/refs/heads/SubscribeStar/Export.user.js
 // @downloadURL  https://github.com/Kamdar-Wolf/Skripty/raw/refs/heads/SubscribeStar/Export.user.js
 // @match        https://subscribestar.adult/*
@@ -17,6 +17,7 @@
 // @connect      ss-uploads-prod.b-cdn.net
 // @run-at       document-idle
 // ==/UserScript==
+
 (function(){
   'use strict';
 
