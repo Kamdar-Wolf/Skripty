@@ -2,8 +2,8 @@
 // @name         SubscribeStar Export
 // @namespace    ss-export-fullhead
 // @version      1.1.5
-// @updateURL    https://raw.githubusercontent.com/Kamdar-Wolf/Skripty/codex/SubscribeStar/Export.user.js
-// @downloadURL  https://raw.githubusercontent.com/Kamdar-Wolf/Skripty/codex/SubscribeStar/Export.user.js
+// @updateURL    https://github.com/Kamdar-Wolf/Skripty/raw/refs/heads/SubscribeStar/Export.user.js
+// @downloadURL  https://github.com/Kamdar-Wolf/Skripty/raw/refs/heads/SubscribeStar/Export.user.js
 // @match        https://subscribestar.adult/*
 // @match        https://subscribestar.com/*
 // @grant        GM_xmlhttpRequest
